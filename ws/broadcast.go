@@ -1,6 +1,8 @@
 package ws
 
 import (
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -41,6 +43,7 @@ func joinHandler(){
     room, ok := rooms[output.Current_Code]
     if ok {
       room.Users = append(room.Users, output)
+      rooms[output.Current_Code] = room
     }else {
       new_room := Room{
         Code: output.Current_Code,
@@ -56,10 +59,12 @@ func joinHandler(){
 func broadcastHandler(){
   for {
     msg := <- broadcast
+    log.Println(msg)
     room := rooms[msg.Code]
     room.Messages = append(room.Messages, msg)
     rooms[msg.Code] = room
     for _,user := range room.Users {
+      fmt.Println(user.Username)
       user.Conn.WriteJSON(msg)
     }
   }

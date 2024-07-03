@@ -18,10 +18,11 @@ func RoomRoute(w http.ResponseWriter,r *http.Request){
    code := chi.URLParam(r,"code")
    usermame := r.URL.Query().Get("username")
    conn,err := upgrader.Upgrade(w,r,nil)
-   defer conn.Close()
    if err != nil {
     http.Error(w,err.Error(),http.StatusBadRequest)
    }
+   defer conn.Close()
+
    usr := User{
       Conn: conn,
       Username: usermame,
@@ -31,7 +32,8 @@ func RoomRoute(w http.ResponseWriter,r *http.Request){
    for {
     _,msg,err := conn.ReadMessage()
     if err != nil {
-      http.Error(w,err.Error(),http.StatusBadRequest)
+      broadcast<-Message{Code: code,Content: "Left the chat!",Date: time.Now(),User: usr}
+      break
     }
  
    broadcast<-Message{Code: code,Content: string(msg),Date: time.Now(),User: usr}
